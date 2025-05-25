@@ -31,38 +31,37 @@ We’ve created an easy-to-use loyalty tracking system that:
 
 ## 🛠️ Tech Stack
 
-| Tool        | Purpose |
-|-------------|---------|
-| **Supabase**  | Auth, database, and backend |
-| **Cursor AI / Rork.app** | Rapid prototyping and frontend |
-| **MGX** | Lightning-fast UI design |
-| **Bolt.new (optional)** | Backend logic, deployable functions |
+| Tool               | Purpose                            |
+|--------------------|------------------------------------|
+| **Supabase**        | Auth, database, and backend        |
+| **HTML + Bootstrap**| Frontend UI                        |
+| **JavaScript**      | Frontend logic and interactivity   |
 
 ---
 
 ## 🧱 Database Schema (Supabase)
 
 ### `users` Table
-| Field         | Type     | Description             |
-|---------------|----------|-------------------------|
-| `id`          | UUID     | Primary key             |
-| `phone_number`| Text     | Unique identifier       |
-| `created_at`  | Timestamp | User registration date  |
+| Field         | Type      | Description              |
+|---------------|-----------|--------------------------|
+| `id`          | UUID      | Primary key              |
+| `phone_number`| Text      | Unique identifier        |
+| `created_at`  | Timestamp | User registration date   |
 
 ### `visits` Table
-| Field       | Type     | Description                   |
-|-------------|----------|-------------------------------|
-| `id`        | UUID     | Primary key                   |
-| `user_id`   | UUID     | Foreign key to `users`        |
-| `visit_date`| Timestamp| Automatically set on visit    |
+| Field        | Type      | Description                  |
+|--------------|-----------|------------------------------|
+| `id`         | UUID      | Primary key                  |
+| `user_id`    | UUID      | Foreign key to `users`       |
+| `visit_date` | Timestamp | Automatically set on visit   |
 
 ### `rewards` Table *(Optional)*
-| Field       | Type     | Description                 |
-|-------------|----------|-----------------------------|
-| `id`        | UUID     | Primary key                 |
-| `user_id`   | UUID     | Foreign key to `users`      |
-| `reward_name`| Text    | e.g. "Free Haircut"         |
-| `redeemed`  | Boolean  | Reward claimed or not       |
+| Field         | Type     | Description                |
+|---------------|----------|----------------------------|
+| `id`          | UUID     | Primary key                |
+| `user_id`     | UUID     | Foreign key to `users`     |
+| `reward_name` | Text     | e.g. "Free Haircut"        |
+| `redeemed`    | Boolean  | Reward claimed or not      |
 
 ---
 
@@ -77,19 +76,20 @@ We’ve created an easy-to-use loyalty tracking system that:
 
 ---
 
-## 🎨 UI Design (via MGX)
+## 🎨 UI Design (via Bootstrap)
 
 - **Home Screen** – Enter phone number
 - **Visit Summary** – "You have X visits. 1 more for a reward!"
 - **Reward Screen** – "🎉 You've earned a reward!"
 - **Admin Panel**  – View all customers, visits, and redemptions
+
 ---
 
 ## 🔐 Security & Fault Tolerance
 
 - Supabase handles auth and data integrity
-- Backend code has error handling and validation
-- Sensitive logic like visit logging protected from abuse
+- JavaScript handles basic input validation
+- Visit logging logic protected via Supabase Row-Level Security (RLS)
 
 ---
 
@@ -97,30 +97,18 @@ We’ve created an easy-to-use loyalty tracking system that:
 
 - Manual testing of user flows
 - Simulated phone numbers for demo
-- Unit-tested core logic (visit counting, reward logic)
+- Unit-tested visit and reward logic in JavaScript
 
 ---
 
 ## 🚀 How to Run Locally
 
 ### 🔧 Prerequisites
-- Node.js + npm/yarn
-- Supabase project (create free at https://supabase.com)
+- A free Supabase project: https://supabase.com
 
 ### 🛠️ Setup
 
+###### 1. Clone the repository:
+
 git clone https://github.com/your-username/loyalty-vibes.git
 cd loyalty-vibes
-
-# Install dependencies
-npm install
-
-# Add your Supabase keys to .env
-touch .env
-
-# Environment Variables (.env)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-
-# 🏁 Start the app
-npm run dev
