@@ -112,3 +112,4 @@ We’ve created an easy-to-use loyalty tracking system that:
 
 git clone https://github.com/your-username/loyalty-vibes.git
 cd loyalty-vibes
+-- password.Kelvn@Super@User2002
