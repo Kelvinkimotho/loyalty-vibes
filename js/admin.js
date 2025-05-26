@@ -1,4 +1,4 @@
- // Admin dashboard logic
+// Admin dashboard logic
 
 async function loadAdminData() {
   const { data: users, error: usersError } = await supabase
@@ -25,10 +25,10 @@ async function loadAdminData() {
       return;
     }
 
-    // Fetch rewards count
+    // Fetch reward count
     const { data: rewards, error: rewardsError } = await supabase
       .from('rewards')
-      .select('*')
+      .select('id')
       .eq('user_id', user.id);
 
     if (rewardsError) {
@@ -36,16 +36,20 @@ async function loadAdminData() {
       return;
     }
 
-    // Build table row
+    // Build table row with View History button
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${user.phone_number}</td>
       <td>${visits.length}</td>
       <td>${rewards.length}</td>
+      <td>
+        <a href="history.html?phone=${encodeURIComponent(user.phone_number)}" class="btn btn-sm btn-primary">
+          View History
+        </a>
+      </td>
     `;
     tableBody.appendChild(row);
   }
 }
 
 window.addEventListener('DOMContentLoaded', loadAdminData);
-
