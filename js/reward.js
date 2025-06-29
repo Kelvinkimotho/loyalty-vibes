@@ -1,52 +1,82 @@
-const supabase = window.supabase;
+import { supabase } from './supabase.js'
 
-async function showLatestReward() {
-  const phone = new URLSearchParams(window.location.search).get('phone');
-
+async function showLatestReward(phone, visits) {
   if (!phone) {
-    document.getElementById('reward-name').textContent = "Phone number missing.";
-    return;
+    document.getElementById('reward-name').textContent = "📵 Phone number missing."
+    return
   }
 
-  // 1. Get the user by phone
   const { data: user, error: userError } = await supabase
     .from('users')
     .select('id')
     .eq('phone_number', phone)
-    .single();
+    .single()
 
   if (userError || !user) {
-    document.getElementById('reward-name').textContent = "User not found.";
-    return;
+    document.getElementById('reward-name').textContent = "❌ User not found."
+    return
   }
 
-  // 2. Get latest reward
+  // Insert reward only if visits is a multiple of 10
+  if (visits && visits % 10 === 0) {
+    const { error: insertError } = await supabase
+      .from('rewards')
+      .insert([{ user_id: user.id }])
+
+    if (insertError) {
+      document.getElementById('reward-name').textContent = "❌ Failed to insert reward."
+      return
+    }
+  }
+
+  // Get latest reward
   const { data: rewards, error: rewardError } = await supabase
     .from('rewards')
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
-    .limit(1);
+    .limit(1)
 
-  if (rewardError || rewards.length === 0) {
-    document.getElementById('reward-name').textContent = "No reward found.";
-    return;
+  if (rewardError || !rewards || rewards.length === 0) {
+    document.getElementById('reward-name').textContent = "🎁 No reward found yet."
+    return
   }
 
-  const latestReward = rewards[0];
-  document.getElementById('reward-name').textContent =
-    `Reward unlocked on ${new Date(latestReward.created_at).toLocaleDateString()} 🎁`;
+  const latestReward = rewards[0]
+  const date = new Date(latestReward.created_at).toLocaleDateString()
+  document.getElementById('reward-name').textContent = `🎉 Reward unlocked on ${date}`
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const phone = urlParams.get('phone');
-  const visits = urlParams.get('visits');
+  const urlParams = new URLSearchParams(window.location.search)
+  let phone = urlParams.get('phone')
+  let visits = urlParams.get('visits')
 
-  const historyLink = document.getElementById('history-link');
-  if (historyLink) {
-    historyLink.href = `history.html?phone=${encodeURIComponent(phone)}&visits=${visits}&from=reward`;
+  // Ask user if values missing
+  if (!phone) {
+    phone = prompt("Enter your phone number:")
+    if (phone) urlParams.set('phone', phone)
   }
 
-  showLatestReward();
-});
+  if (!visits) {
+    visits = prompt("Enter your total visits:")
+    if (visits) urlParams.set('visits', visits)
+  }
+
+  // Update history button link
+  const historyLink = document.getElementById('history-link')
+  if (historyLink && phone && visits) {
+    historyLink.href = `history.html?phone=${encodeURIComponent(phone)}&visits=${visits}&from=reward`
+  } else {
+    historyLink.classList.add('disabled')
+    historyLink.setAttribute('title', 'Missing visit data')
+  }
+
+  // Show reward
+  showLatestReward(phone, parseInt(visits, 10))
+
+  // Open admin after 2 seconds
+  setTimeout(() => {
+    window.open('admin.html', '_blank')
+  }, 2000)
+})

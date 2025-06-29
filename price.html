@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pricing - Loyalty Vibes</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.min.css" />
+</head>
+<body>
+  <div class="container py-5">
+    <h2 class="text-center mb-4">Loyalty Vibes Pricing</h2>
+
+    <div class="text-center mb-4">
+      <input type="tel" id="phone" class="form-control d-inline-block" style="max-width: 300px;" placeholder="Enter phone number" />
+      <div id="error" class="text-danger mt-2 d-none"></div>
+      <div id="success" class="text-success mt-2 d-none"></div>
+    </div>
+
+    <div class="row justify-content-center">
+
+      <!-- Basic Plan -->
+      <div class="col-md-4">
+        <div class="card shadow-sm">
+          <div class="card-header text-center bg-primary text-white">
+            Basic Plan
+          </div>
+          <div class="card-body text-center">
+            <h3>KES 200/month</h3>
+            <ul class="list-unstyled mt-3 mb-4">
+              <li>✔️ Loyalty Tracking</li>
+              <li>✔️ QR Code Check-ins</li>
+              <li>✔️ Admin Dashboard</li>
+            </ul>
+            <button class="btn btn-outline-primary subscribe-btn" data-plan="Basic Plan">Subscribe Now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premium Add-on -->
+      <div class="col-md-4 mt-4 mt-md-0">
+        <div class="card shadow-sm">
+          <div class="card-header text-center bg-success text-white">
+            Premium Add-on
+          </div>
+          <div class="card-body text-center">
+            <h3>KES 100 one-time</h3>
+            <ul class="list-unstyled mt-3 mb-4">
+              <li>🎫 Branded QR Code</li>
+              <li>📲 SMS Marketing Integration</li>
+              <li>Priority Support</li>
+            </ul>
+            <button class="btn btn-outline-success subscribe-btn" data-plan="Premium Add-on">Add to Plan</button>
+            <button class="btn btn-sm btn-danger cancel-btn mt-2" data-plan="Basic Plan">Cancel</button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+  <script type="module" src="js/price.js"></script>
+</body>
+</html>

@@ -1,102 +1,95 @@
-const supabase = window.supabase;
+import { supabase } from './supabase.js'
 
 async function loadHistory() {
-  const phone = new URLSearchParams(window.location.search).get('phone');
+  let phone = new URLSearchParams(window.location.search).get('phone')
 
   if (!phone) {
-    alert("Phone number is missing.");
-    return;
+    phone = prompt("Please enter your phone number:")
+    if (!phone) {
+      alert("Phone number is required.")
+      return
+    }
+    window.history.replaceState({}, '', `?phone=${encodeURIComponent(phone)}`)
   }
 
-  document.getElementById('phoneDisplay').textContent = phone;
+  console.log("📞 Phone number from URL or input:", phone)
+  document.getElementById('phoneDisplay').textContent = phone
 
+  // Get user by phone
   const { data: user, error: userError } = await supabase
     .from('users')
     .select('id')
     .eq('phone_number', phone)
-    .single();
+    .single()
 
   if (userError || !user) {
-    alert("User not found.");
-    return;
+    console.error("❌ User lookup error:", userError)
+    alert("User not found.")
+    return
   }
 
-  // Fetch visits
-  const { data: visits } = await supabase
+  // Use existing timestamp column
+  const { data: visits, error: visitError } = await supabase
     .from('visits')
     .select('*')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+    .order('visit_time', { ascending: false }) 
 
-  const visitList = document.getElementById('visitList');
-  visitList.innerHTML = '';
-
-  if (!visits || visits.length === 0) {
-    visitList.innerHTML = '<li class="list-group-item text-muted">No visits yet.</li>';
-  } else {
-    visits.forEach((visit, i) => {
-      const li = document.createElement('li');
-      li.className = 'list-group-item';
-      li.textContent = `Visit #${visits.length - i} on ${new Date(visit.created_at).toLocaleString()}`;
-      visitList.appendChild(li);
-    });
+  if (visitError) {
+    console.error("⚠️ Error fetching visits:", visitError)
+    return
   }
 
-  // Fetch rewards
-  const { data: rewards } = await supabase
+  const visitList = document.getElementById('visitList')
+  visitList.innerHTML = visits?.length
+    ? visits.map((v, i) =>
+        `<li class="list-group-item">Visit #${visits.length - i} on ${new Date(v.visit_time).toLocaleString()}</li>`
+      ).join('')
+    : '<li class="list-group-item text-muted">No visits yet.</li>'
+
+  const { data: rewards, error: rewardError } = await supabase
     .from('rewards')
     .select('*')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false }) 
 
-  const rewardList = document.getElementById('rewardList');
-  rewardList.innerHTML = '';
-
-  if (!rewards || rewards.length === 0) {
-    rewardList.innerHTML = '<li class="list-group-item text-muted">No rewards earned yet.</li>';
-  } else {
-    rewards.forEach((reward, i) => {
-      const li = document.createElement('li');
-      li.className = 'list-group-item';
-      li.textContent = `Reward #${rewards.length - i} on ${new Date(reward.created_at).toLocaleString()}`;
-      rewardList.appendChild(li);
-    });
+  if (rewardError) {
+    console.error("⚠️ Error fetching rewards:", rewardError)
+    return
   }
 
-  // Build monthly summary data
+  const rewardList = document.getElementById('rewardList')
+  rewardList.innerHTML = rewards?.length
+    ? rewards.map((r, i) =>
+        `<li class="list-group-item">Reward #${rewards.length - i} on ${new Date(r.created_at).toLocaleString()}</li>`
+      ).join('')
+    : '<li class="list-group-item text-muted">No rewards earned yet.</li>'
+
+  // Monthly summary chart
+  const visitsPerMonth = Array(12).fill(0)
+  const rewardsPerMonth = Array(12).fill(0)
   const monthLabels = Array.from({ length: 12 }, (_, i) =>
     new Date(0, i).toLocaleString('default', { month: 'short' })
-  );
-
-  const visitsPerMonth = Array(12).fill(0);
-  const rewardsPerMonth = Array(12).fill(0);
+  )
 
   visits.forEach(v => {
-    const month = new Date(v.created_at).getMonth();
-    visitsPerMonth[month]++;
-  });
+    const month = new Date(v.visit_time).getMonth()
+    visitsPerMonth[month]++
+  })
 
   rewards.forEach(r => {
-    const month = new Date(r.created_at).getMonth();
-    rewardsPerMonth[month]++;
-  });
+    const month = new Date(r.created_at).getMonth()
+    rewardsPerMonth[month]++
+  })
 
-  const ctx = document.getElementById('summaryChart').getContext('2d');
+  const ctx = document.getElementById('summaryChart').getContext('2d')
   new Chart(ctx, {
     type: 'bar',
     data: {
       labels: monthLabels,
       datasets: [
-        {
-          label: 'Visits',
-          backgroundColor: '#0d6efd',
-          data: visitsPerMonth
-        },
-        {
-          label: 'Rewards',
-          backgroundColor: '#198754',
-          data: rewardsPerMonth
-        }
+        { label: 'Visits', data: visitsPerMonth, backgroundColor: '#0d6efd' },
+        { label: 'Rewards', data: rewardsPerMonth, backgroundColor: '#198754' }
       ]
     },
     options: {
@@ -112,22 +105,10 @@ async function loadHistory() {
         }
       }
     }
-  });
+  })
+
+  console.log("✅ Visits:", visits)
+  console.log("✅ Rewards:", rewards)
 }
 
-// Page loaded
-document.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const phone = params.get('phone');
-  const visits = params.get('visits');
-  const from = params.get('from');
-
-  const backButton = document.getElementById('back-button');
-  if (backButton && from === 'reward') {
-    backButton.addEventListener('click', () => {
-      window.location.href = `reward.html?phone=${encodeURIComponent(phone)}&visits=${visits}`;
-    });
-  }
-
-  loadHistory();
-});
+document.addEventListener('DOMContentLoaded', loadHistory)

@@ -1,55 +1,78 @@
-// Admin dashboard logic
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-async function loadAdminData() {
-  const { data: users, error: usersError } = await supabase
-    .from('users')
-    .select('id, phone_number, created_at');
+const supabase = createClient(
+  'https://chznfjglrqyabfkadcgz.supabase.co',
+  'enter your-supabase-anon-key-here'
+)
 
-  if (usersError) {
-    alert('Error loading users');
-    return;
+document.addEventListener('DOMContentLoaded', async () => {
+  const tbody = document.getElementById('customerTableBody')
+  if (!tbody) {
+    console.error('Table body not found.')
+    return
   }
 
-  const tableBody = document.getElementById('usersTableBody');
-  tableBody.innerHTML = '';
+  const { data, error } = await supabase
+    .from('visits')
+    .select('phone, visit_time')
+    .order('visit_time', { ascending: false })
 
-  for (const user of users) {
-    // Fetch visit count
-    const { data: visits, error: visitsError } = await supabase
-      .from('visits')
-      .select('id')
-      .eq('user_id', user.id);
+  if (error) {
+    console.error('Error loading visits:', error)
+    return
+  }
 
-    if (visitsError) {
-      alert('Error loading visits');
-      return;
-    }
+  // Group visits by phone number
+  const visitsByPhone = {}
+  data.forEach(visit => {
+    const phone = visit.phone
+    if (!visitsByPhone[phone]) visitsByPhone[phone] = []
+    visitsByPhone[phone].push(new Date(visit.visit_time))
+  })
 
-    // Fetch reward count
-    const { data: rewards, error: rewardsError } = await supabase
-      .from('rewards')
-      .select('id')
-      .eq('user_id', user.id);
+  // Populate the table
+  Object.entries(visitsByPhone).forEach(([phone, visits]) => {
+    const total = visits.length
+    const lastVisit = visits[0].toISOString().split('T')[0]
+    const eligible = total >= 5
+    const rewarded = total >= 10
 
-    if (rewardsError) {
-      alert('Error loading rewards');
-      return;
-    }
 
-    // Build table row with View History button
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${user.phone_number}</td>
-      <td>${visits.length}</td>
-      <td>${rewards.length}</td>
+    const tr = document.createElement('tr')
+    tr.innerHTML = `
+      <td>${phone}</td>
+      <td>${total}</td>
+      <td>${lastVisit}</td>
+      <td>${eligible ? (rewarded ? '🎁 Rewarded' : '🎯 Eligible') : '❌ Not Yet'}</td>
+
       <td>
-        <a href="history.html?phone=${encodeURIComponent(user.phone_number)}" class="btn btn-sm btn-primary">
-          View History
-        </a>
+        <button class="btn btn-success btn-sm" ${eligible ? '' : 'disabled'}>
+          Redeem Reward
+        </button>
       </td>
-    `;
-    tableBody.appendChild(row);
-  }
-}
+    `
+    
+    tbody.appendChild(tr)
+  })
+})
 
-window.addEventListener('DOMContentLoaded', loadAdminData);
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) return console.error("Failed to fetch subscriptions:", error)
+
+  const tbody = document.getElementById('subsTableBody')
+  data.forEach(sub => {
+    const tr = document.createElement('tr')
+    tr.innerHTML = `
+      <td>${sub.phone_number}</td>
+      <td>${sub.plan}</td>
+      <td>${new Date(sub.created_at).toLocaleString()}</td>
+    `
+    tbody.appendChild(tr)
+  })
+})
+

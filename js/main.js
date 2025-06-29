@@ -1,97 +1,92 @@
-// main.js
-import { supabase } from './supabase.js';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('checkin-form');
-  const phoneInput = document.getElementById('phone');
-  const errorDiv = document.getElementById('error');
+// Initialize Supabase
+const supabase = createClient(
+  'https://chznfjglrqyabfkadcgz.supabase.co',
+  'enter your-supabase-anon-key-here'
+)
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+// Elements
+const form = document.getElementById('checkin-form')
+const phoneInput = document.getElementById('phone')
+const qrContainer = document.getElementById('qr-container')
+const qrCanvas = document.getElementById('qr-code')
+const errorBox = document.getElementById('error')
 
-    const phoneNumber = phoneInput.value.trim();
-    if (!isValidPhoneNumber(phoneNumber)) {
-      showError(errorDiv, 'Please enter a valid phone number (e.g. +254712345678)');
-      return;
-    }
+// intl-tel-input setup
+const iti = window.intlTelInput(phoneInput, {
+  initialCountry: 'ke',
+  utilsScript: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js'
+})
 
-    try {
-      const userId = await handleUserWithRetry(supabase, phoneNumber);
-      const visitCount = await handleVisitWithRetry(supabase, userId);
-      redirectUser(phoneNumber, visitCount);
-    } catch (error) {
-      console.error('Error:', error);
-      showError(errorDiv, 'An error occurred. Please try again.');
-    }
-  });
-});
+form.addEventListener('submit', async (e) => {
+  e.preventDefault()
+  errorBox.classList.add('d-none')
 
-function isValidPhoneNumber(phone) {
-  return /^\+?\d{7,15}$/.test(phone);
+  const phone = iti.getNumber().trim()
+  if (!phone) return showError('Invalid phone number.')
+
+  //  Upsert user
+  const { data: upsertedUser, error: upsertError } = await supabase
+    .from('users')
+    .upsert({ phone_number: phone }, { onConflict: 'phone_number' })
+    .select('id')
+    .single()
+
+  if (upsertError || !upsertedUser) return showError('User save failed.')
+
+  const userId = upsertedUser.id
+
+  // Insert visit
+  const { error: visitError } = await supabase
+    .from('visits')
+    .insert([{ user_id: userId, phone }])
+
+  if (visitError) return showError('Visit save failed.')
+
+  // Get total visits for this user
+  const { data: visits, error: visitFetchError } = await supabase
+    .from('visits')
+    .select('*')
+    .eq('user_id', userId)
+
+  if (visitFetchError || !visits) return showError('Failed to fetch visit count.')
+
+  const visitCount = visits.length
+  const rewardEligible = visitCount % 5 === 0
+
+if (rewardEligible) {
+  const { error: rewardError } = await supabase
+    .from('rewards')
+    .insert([{ user_id: userId }])
+
+  if (rewardError) return showError('Failed to save reward.')
+
+  window.location.href = `reward.html?phone=${encodeURIComponent(phone)}&visits=${visitCount}`
 }
-
-function showError(element, message) {
-  element.textContent = message;
-  element.classList.remove('d-none');
-}
-
-function redirectUser(phoneNumber, visitCount) {
-  const isRewardVisit = visitCount % 5 === 0;
-  const page = isRewardVisit ? 'reward.html' : 'summary.html';
-  window.location.href = `${page}?phone=${encodeURIComponent(phoneNumber)}&visits=${visitCount}`;
-}
-
-async function handleUserWithRetry(supabase, phoneNumber, maxAttempts = 3) {
-  let attempts = 0;
-  while (attempts < maxAttempts) {
-    try {
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('id')
-        .eq('phone_number', phoneNumber)
-        .maybeSingle();
-
-      if (error) throw error;
-      if (user) return user.id;
-
-      const { data: newUser, error: insertError } = await supabase
-        .from('users')
-        .insert([{ phone_number: phoneNumber }])
-        .select('id')
-        .single();
-
-      if (insertError) throw insertError;
-      return newUser.id;
-    } catch (err) {
-      attempts++;
-      if (attempts >= maxAttempts) throw err;
-      await new Promise(res => setTimeout(res, 500 * attempts));
-    }
+ else {
+    const left = 5 - (visitCount % 5)
+    document.getElementById('visits-left').textContent = `${left}`
+    showModal('waitModal')
   }
+
+  generateQR(phone)
+})
+
+function generateQR(text) {
+  qrContainer.classList.remove('d-none')
+  QRCode.toCanvas(qrCanvas, text, { width: 180 }, (err) => {
+    if (err) showError('QR generation error')
+  })
 }
 
-async function handleVisitWithRetry(supabase, userId, maxAttempts = 3) {
-  let attempts = 0;
-  while (attempts < maxAttempts) {
-    try {
-      const { error } = await supabase
-        .from('visits')
-        .insert([{ user_id: userId }]);
-
-      if (error) throw error;
-
-      const { count, error: countError } = await supabase
-        .from('visits')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId);
-
-      if (countError) throw countError;
-
-      return count;
-    } catch (err) {
-      attempts++;
-      if (attempts >= maxAttempts) throw err;
-      await new Promise(res => setTimeout(res, 500 * attempts));
-    }
-  }
+function showModal(id) {
+  const modal = new bootstrap.Modal(document.getElementById(id))
+  modal.show()
 }
+
+function showError(msg) {
+  errorBox.textContent = msg
+  errorBox.classList.remove('d-none')
+}
+
