@@ -52,17 +52,24 @@ We’ve created an easy-to-use loyalty tracking system that:
 | Field        | Type      | Description                  |
 |--------------|-----------|------------------------------|
 | `id`         | UUID      | Primary key                  |
+|  `phone`     | Text      | Optional (redundant)         |
 | `user_id`    | UUID      | Foreign key to `users`       |
-| `visit_date` | Timestamp | Automatically set on visit   |
+| `visit_date` | Timestamp | Default                      |
 
 ### `rewards` Table *(Optional)*
 | Field         | Type     | Description                |
 |---------------|----------|----------------------------|
 | `id`          | UUID     | Primary key                |
 | `user_id`     | UUID     | Foreign key to `users`     |
-| `reward_name` | Text     | e.g. "Free Haircut"        |
-| `redeemed`    | Boolean  | Reward claimed or not      |
+| `created_at`  | Timestamp| Default                    |
 
+### `subscription` Table *(Optional)*
+| Field         | Type     | Description                |
+|---------------|----------|----------------------------|
+| `id`          | UUID     | Primary key                |
+| `phone_number`| Text     | Not Null                   |
+| `plan`        | Text     | Not Null                   |
+| `created_at`  | Timestamp| Default                    |
 ---
 
 ## ⚙️ App Logic
