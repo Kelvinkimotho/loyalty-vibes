@@ -1,4 +1,4 @@
-[# 💈 Loyalty Vibes – A Phone-Based Loyalty Rewards App
+# 💈 Loyalty Vibes – A Phone-Based Loyalty Rewards App
 
 🎉 Built for the Vibe Coding Hackathon – #1MillionDevs Movement  
 🚀 Theme: *"Building Human-Centered, Joy-Driven Solutions Using AI and Low-Code Tools"*
@@ -136,6 +136,8 @@ git clone https://github.com/Kelvinkimotho/loyalty-vibes.git
 - node server.js
 
 ###### 4. Open frontend via Live Server (index.html)
+
+
 
 📦 Deployment (Live on Render)
 - Backend hosted via Render
