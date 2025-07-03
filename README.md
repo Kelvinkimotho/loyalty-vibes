@@ -120,20 +120,20 @@ We’ve created an easy-to-use loyalty tracking system that:
 ###### 1. Clone the repository:
 
 git clone https://github.com/Kelvinkimotho/loyalty-vibes.git
-cd loyalty-vibes
+- cd loyalty-vibes
 
 ###### 2. Create .env in backend/:
 
-STRIPE_SECRET_KEY=sk_test_...
-AT_API_KEY=atsk_...
-AT_USERNAME=sandbox
-DOMAIN=http://localhost:5500
+- STRIPE_SECRET_KEY=sk_test_...
+- AT_API_KEY=atsk_...
+- AT_USERNAME=sandbox
+- DOMAIN=http://localhost:5500
 
 ###### 3. Start backend:
 
-cd backend
-npm install
-node server.js
+- cd backend
+- npm install
+- node server.js
 
 ###### 4. Open frontend via Live Server (index.html)
 
