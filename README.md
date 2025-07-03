@@ -1,4 +1,4 @@
-# 💈 Loyalty Vibes – A Phone-Based Loyalty Rewards App
+[# 💈 Loyalty Vibes – A Phone-Based Loyalty Rewards App
 
 🎉 Built for the Vibe Coding Hackathon – #1MillionDevs Movement  
 🚀 Theme: *"Building Human-Centered, Joy-Driven Solutions Using AI and Low-Code Tools"*
@@ -112,10 +112,36 @@ We’ve created an easy-to-use loyalty tracking system that:
 
 ### 🔧 Prerequisites
 - A free Supabase project: https://supabase.com
+- Africa’s Talking: https://account.africastalking.com
+- Stripe Dashboard: https://dashboard.stripe.com
 
 ### 🛠️ Setup
 
 ###### 1. Clone the repository:
 
-git clone https://github.com/your-username/loyalty-vibes.git
+git clone https://github.com/Kelvinkimotho/loyalty-vibes.git
 cd loyalty-vibes
+
+###### 2. Create .env in backend/:
+
+STRIPE_SECRET_KEY=sk_test_...
+AT_API_KEY=atsk_...
+AT_USERNAME=sandbox
+DOMAIN=http://localhost:5500
+
+###### 3. Start backend:
+
+cd backend
+npm install
+node server.js
+
+###### 4. Open frontend via Live Server (index.html)
+
+📦 Deployment (Live on Render)
+- Backend hosted via Render
+
+- Connect your GitHub repo for CI/CD
+
+- Add environment variables on Render
+
+- Use custom domain (optional)
