@@ -127,7 +127,7 @@ git clone https://github.com/Kelvinkimotho/loyalty-vibes.git
 - STRIPE_SECRET_KEY=sk_test_...
 - AT_API_KEY=atsk_...
 - AT_USERNAME=sandbox
-- DOMAIN=http://localhost:5500
+- DOMAIN=http://localhost:3005
 
 ###### 3. Start backend:
 
